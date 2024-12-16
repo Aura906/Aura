@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:aura/screen/others/SafetyInformationForm.dart';
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
+// import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -33,22 +33,22 @@ class _KYCFormWithIDState extends State<KYCFormWithID> {
   String selectedIDType = 'Passport'; // Default selected ID type
   File? idProof;
 
-  Future<void> _pickIDProof() async {
-    // Allow multiple file selection with custom file types
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      allowMultiple: false, // Allow multiple files to be selected
-      type: FileType.custom, // Custom file type
-      allowedExtensions: ['jpg', 'pdf', 'doc'], // Supported file extensions
-    );
+  // Future<void> _pickIDProof() async {
+  //   // Allow multiple file selection with custom file types
+  //   FilePickerResult? result = await FilePicker.platform.pickFiles(
+  //     allowMultiple: false, // Allow multiple files to be selected
+  //     type: FileType.custom, // Custom file type
+  //     allowedExtensions: ['jpg', 'pdf', 'doc'], // Supported file extensions
+  //   );
 
-    // If files are selected
-    if (result != null) {
-      setState(() {
-        // Use the path of the selected file (you can handle multiple files as needed)
-        idProof = File(result.files.first.path!);
-      });
-    }
-  }
+  //   // If files are selected
+  //   if (result != null) {
+  //     setState(() {
+  //       // Use the path of the selected file (you can handle multiple files as needed)
+  //       idProof = File(result.files.first.path!);
+  //     });
+  //   }
+  // }
 
   @override
   void dispose() {
@@ -251,7 +251,8 @@ class _KYCFormWithIDState extends State<KYCFormWithID> {
 
               // ID Proof Upload
               ElevatedButton(
-                onPressed: _pickIDProof,
+                onPressed: () {},
+                // onPressed: _pickIDProof,
                 child: const Text('Upload ID Proof'),
               ),
               idProof == null

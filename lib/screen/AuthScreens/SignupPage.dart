@@ -1,4 +1,6 @@
 // import 'package:aura/screen/others/Dashboard.dart';
+import 'package:aura/home_screen.dart';
+import 'package:aura/screen/AuthScreens/LoginScreen.dart';
 import 'package:aura/screen/others/KYCFormWithID.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -14,6 +16,8 @@ class SignupPage extends StatefulWidget {
 class _SignupPageState extends State<SignupPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  // final _auth = AuthService();
+
   // Controllers
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -26,6 +30,14 @@ class _SignupPageState extends State<SignupPage> {
   String? _selectedGender = "Female";
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+
+  // @override
+  // void dispose() {
+  //   _usernameController.dispose();
+  //   _emailController.dispose();
+  //   _passwordController.dispose();
+  //   super.dispose();
+  // }
 
   // Validation Methods
   String? _validateEmail(String? value) {
@@ -164,6 +176,7 @@ class _SignupPageState extends State<SignupPage> {
               buildGenderDropdown(),
               const SizedBox(height: 15),
               GestureDetector(
+                // onTap:_
                 onTap: _submitForm, // Trigger form submission on tap
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -310,5 +323,24 @@ class _SignupPageState extends State<SignupPage> {
             value == null ? "Please select your gender" : null,
       ),
     );
+
+    //    goToSignup(BuildContext context) => Navigator.push(
+    //       context,
+    //       MaterialPageRoute(builder: (context) => const LoginScreen()),
+    //     );
+
+    // goToHome(BuildContext context) => Navigator.push(
+    //       context,
+    //       MaterialPageRoute(builder: (context) => const HomeScreen()),
+    //     );
+
+    // _signup() async {
+    //   final user = await _auth.createUserWithEmailAndPassword(
+    //       _email.text, _password.text);
+    //   if (user != null) {
+    //     log("User Created Succesfully");
+    //     goToHome(context);
+    //   }
+    // }
   }
 }

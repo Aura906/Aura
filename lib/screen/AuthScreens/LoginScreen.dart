@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:aura/screen/AuthScreens/SignupPage.dart';
 import 'package:aura/screen/others/Dashboard.dart';
 import 'package:flutter/material.dart';
@@ -254,4 +256,23 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+
+  //  goToSignup(BuildContext context) => Navigator.push(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => const SignupPage()),
+  //     );
+
+  // goToHome(BuildContext context) => Navigator.push(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => const Screen()),
+  //     );
+
+  // _login() async {
+  //   final user =
+  //       await _auth.loginUserWithEmailAndPassword(_email.text, _password.text);
+
+  //   if (user != null) {
+  //      log("User Logged In");
+  //     goToHome(context);
+  //   }
 }
