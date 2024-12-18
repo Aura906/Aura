@@ -38,10 +38,11 @@ dependencies:
   firebase_core: ^3.8.1
   firebase_auth: ^5.3.4
   firebase_storage: ^12.3.7
+  cloud_firestore: ^5.5.1
+  random_string: ^2.3.1
   google_fonts: ^6.2.1
   velocity_x: ^4.2.1
-  cloud_firestore: ^5.5.1
-  country_code_picker: ^3.0.0
+  # country_code_picker: ^3.0.0
   get: ^4.6.6
   font_awesome_flutter: ^10.7.0
   # camera: ^0.9.4+4

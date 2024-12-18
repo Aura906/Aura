@@ -1,22 +1,37 @@
 // import 'package:aura/screen/others/Dashboard.dart';
-import 'package:aura/home_screen.dart';
-import 'package:aura/screen/AuthScreens/LoginScreen.dart';
+// import 'dart:math';
+
+// import 'package:aura/home_screen.dart';
+// import 'package:aura/screen/AuthScreens/LoginScreen.dart';
+// import 'package:aura/screen/AuthScreens/firebase_auth_implementation/firebase_auth_services.dart';
+// import 'package:aura/home_screen.dart';
 import 'package:aura/screen/others/KYCFormWithID.dart';
+import 'package:aura/service/database.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:random_string/random_string.dart';
+// import 'package:path/path.dart';
 
 class SignupPage extends StatefulWidget {
+  const SignupPage({super.key});
+
   @override
-  _SignupPageState createState() => _SignupPageState();
+  State<SignupPage> createState() => _SignupPageState();
 }
 
 class _SignupPageState extends State<SignupPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  // final _auth = AuthService();
+  // String email = "",
+  //     password = "",
+  //     confirmpassword = "",
+  //     firstName = "",
+  //     lastName = "",
+  //     phone = "";
 
   // Controllers
   final TextEditingController emailController = TextEditingController();
@@ -30,14 +45,6 @@ class _SignupPageState extends State<SignupPage> {
   String? _selectedGender = "Female";
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
-
-  // @override
-  // void dispose() {
-  //   _usernameController.dispose();
-  //   _emailController.dispose();
-  //   _passwordController.dispose();
-  //   super.dispose();
-  // }
 
   // Validation Methods
   String? _validateEmail(String? value) {
@@ -115,8 +122,28 @@ class _SignupPageState extends State<SignupPage> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(FontAwesomeIcons.chevronLeft),
-          onPressed: () {
-            Get.back();
+          onPressed: () async {
+            String Id = randomAlphaNumeric(10);
+            Map<String, dynamic> SignupPageIdfoMap = {
+              "firstName": firstNameController.text,
+              "lastName": lastNameController.text,
+              "id": Id,
+              "phone": phoneController.text,
+            };
+            await DatabaseMethods()
+                .addUsersDetails(SignupPageIdfoMap, Id)
+                .then((Value) {
+              Fluttertoast.showToast(
+                msg: "User Details has been uploaded successfully",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.CENTER,
+                backgroundColor: Colors.red,
+                textColor: Colors.white,
+                fontSize: 16.0,
+              );
+            });
+
+            // Get.back();
           },
         ),
         title: RichText(
@@ -176,8 +203,22 @@ class _SignupPageState extends State<SignupPage> {
               buildGenderDropdown(),
               const SizedBox(height: 15),
               GestureDetector(
-                // onTap:_
+                // onTap: () {
+                //   if (_formKey.currentState!.validate()) {
+                //     setState(() {
+                //       email = emailController.text;
+                //       password = passwordController.text;
+                //       confirmpassword = confirmPasswordController.text;
+                //       firstName = firstNameController.text;
+                //       lastName = lastNameController.text;
+                //       phone = phoneController.text;
+                //     });
+                //   }
+                //   registration();
+                // },
+
                 onTap: _submitForm, // Trigger form submission on tap
+                // onTap: _signUp,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 50.0, vertical: 15.0),
@@ -323,24 +364,5 @@ class _SignupPageState extends State<SignupPage> {
             value == null ? "Please select your gender" : null,
       ),
     );
-
-    //    goToSignup(BuildContext context) => Navigator.push(
-    //       context,
-    //       MaterialPageRoute(builder: (context) => const LoginScreen()),
-    //     );
-
-    // goToHome(BuildContext context) => Navigator.push(
-    //       context,
-    //       MaterialPageRoute(builder: (context) => const HomeScreen()),
-    //     );
-
-    // _signup() async {
-    //   final user = await _auth.createUserWithEmailAndPassword(
-    //       _email.text, _password.text);
-    //   if (user != null) {
-    //     log("User Created Succesfully");
-    //     goToHome(context);
-    //   }
-    // }
   }
 }

@@ -1,30 +1,32 @@
-import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:firebase_core/firebase_core.dart';
+// // import 'dart:math';
 
-class FirebaseAuthServices {
-  FirebaseAuth _auth = FirebaseAuth.instance;
+// import 'package:firebase_auth/firebase_auth.dart';
+// // import 'package:firebase_core/firebase_core.dart';
 
-  Future<User?> signUpWithEmailAndPassword(
-      String email, String password) async {
-    try {
-      UserCredential credential = await _auth.createUserWithEmailAndPassword(
-          email: email, password: password);
-      return credential.user;
-    } catch (e) {
-      print("Some error occured");
-    }
-    return null;
-  }
+// class FirebaseAuthService {
+//   FirebaseAuth auth = FirebaseAuth.instance;
 
-  Future<User?> signInWithEmailAndPassword(
-      String email, String password) async {
-    try {
-      UserCredential credential = await _auth.signInWithEmailAndPassword(
-          email: email, password: password);
-      return credential.user;
-    } catch (e) {
-      print("Some error occured");
-    }
-    return null;
-  }
-}
+//   Future<User?> signUpWithEmailAndPassword(
+//       String email, String password) async {
+//     try {
+//       UserCredential credential = await auth.createUserWithEmailAndPassword(
+//           email: email, password: password);
+//       return credential.user;
+//     } catch (e) {
+//       print("Some error occured");
+//     }
+//     return null;
+//   }
+
+//   Future<User?> signInWithEmailAndPassword(
+//       String email, String password) async {
+//     try {
+//       UserCredential credential = await auth.signInWithEmailAndPassword(
+//           email: email, password: password);
+//       return credential.user;
+//     } catch (e) {
+//       print("Some error occured");
+//     }
+//     return null;
+//   }
+// }
