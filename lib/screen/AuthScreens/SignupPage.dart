@@ -1,20 +1,14 @@
-// import 'package:aura/screen/others/Dashboard.dart';
-// import 'dart:math';
-
-// import 'package:aura/home_screen.dart';
-// import 'package:aura/screen/AuthScreens/LoginScreen.dart';
-// import 'package:aura/screen/AuthScreens/firebase_auth_implementation/firebase_auth_services.dart';
-// import 'package:aura/home_screen.dart';
 import 'package:aura/screen/others/KYCFormWithID.dart';
 import 'package:aura/service/database.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:random_string/random_string.dart';
-// import 'package:path/path.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -26,14 +20,10 @@ class SignupPage extends StatefulWidget {
 class _SignupPageState extends State<SignupPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  // String email = "",
-  //     password = "",
-  //     confirmpassword = "",
-  //     firstName = "",
-  //     lastName = "",
-  //     phone = "";
-
   // Controllers
+  FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
@@ -93,14 +83,120 @@ class _SignupPageState extends State<SignupPage> {
     return null;
   }
 
+  /// Authentication Setup
+
+  void _registerUser(BuildContext context) async {
+    try {
+      // Check if the email is already in use and create the user
+      var userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: confirmPasswordController.text.trim(),
+      );
+
+      // Get the user from the userCredential
+      User? user = userCredential.user;
+
+      if (user != null) {
+        // Registration successful
+        // Save user info to Firestore
+        await saveUserInfoToFirestore(user);
+
+        Fluttertoast.showToast(
+          msg: "User registered: ${user.email}",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+
+        // Navigate to the KYC Form
+        Get.to(KYCFormWithID(
+          userId: user.uid,
+        ));
+      } else {
+        // If user is null, registration failed
+        Fluttertoast.showToast(
+          msg: "User registration failed.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      // Handle Firebase authentication errors
+      if (e.code == 'email-already-in-use') {
+        Fluttertoast.showToast(
+          msg: "This email is already in use. Please try logging in.",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.orange,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      } else {
+        // Other authentication errors
+        Fluttertoast.showToast(
+          msg: e.message ?? 'An error occurred. Please try again.',
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+    } catch (e) {
+      // Handle other errors
+      Fluttertoast.showToast(
+        msg: e.toString(), // Convert the error to a string
+        toastLength: Toast.LENGTH_LONG, // Duration of the toast
+        gravity: ToastGravity.BOTTOM, // Position of the toast
+        backgroundColor: Colors.red, // Background color
+        textColor: Colors.white, // Text color
+        fontSize: 16.0, // Font size
+      );
+    }
+  }
+
+  Future saveUserInfoToFirestore(User fuser) async {
+    try {
+      await FirebaseFirestore.instance.collection("users").doc(fuser.uid).set({
+        "uid": fuser.uid,
+        "email": emailController.text.trim(),
+        "name":
+            "${firstNameController.text.trim()} ${lastNameController.text.trim()}",
+        "phoneNumber": phoneController.text.trim(),
+        "gender": _selectedGender,
+      });
+
+      // Optionally, show a success message after saving to Firestore
+      Fluttertoast.showToast(
+        msg: "User info saved to Firestore",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    } catch (e) {
+      // Handle Firestore errors
+      Fluttertoast.showToast(
+        msg: "Failed to save user info to Firestore: $e",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
+  }
+
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      // Navigate to the next page if validation passes
-      Get.to(KYCFormWithID());
-      Get.snackbar('Success', 'Signed up successfully!',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white);
+      // If the form is valid, register the user
+      _registerUser(context);
     } else {
       Fluttertoast.showToast(
         msg: "Please fix the errors in the form",
@@ -203,20 +299,6 @@ class _SignupPageState extends State<SignupPage> {
               buildGenderDropdown(),
               const SizedBox(height: 15),
               GestureDetector(
-                // onTap: () {
-                //   if (_formKey.currentState!.validate()) {
-                //     setState(() {
-                //       email = emailController.text;
-                //       password = passwordController.text;
-                //       confirmpassword = confirmPasswordController.text;
-                //       firstName = firstNameController.text;
-                //       lastName = lastNameController.text;
-                //       phone = phoneController.text;
-                //     });
-                //   }
-                //   registration();
-                // },
-
                 onTap: _submitForm, // Trigger form submission on tap
                 // onTap: _signUp,
                 child: Container(
