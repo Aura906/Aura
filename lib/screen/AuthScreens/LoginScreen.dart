@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
       try {
         // Simulated login process
         await Future.delayed(const Duration(seconds: 2));
-        Get.to(Dashboard());
+        // Get.to(Dashboard());
         // Navigate to Dashboard
         Get.snackbar(
           'Success',
