@@ -8,11 +8,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (kIsWeb) {
-    // Initialize Firebase for Web
+    // Initialize Firebase for Web`
     await Firebase.initializeApp(
       options: FirebaseOptions(
         apiKey: "AIzaSyAN3f0Vv3-pQ9bcFHSs8TdhH3PUiNZiIps",
         authDomain: "aura-f3b37.firebaseapp.com",
+
         projectId: "aura-f3b37",
         storageBucket:
             "aura-f3b37.appspot.com", // Corrected the storage bucket URL

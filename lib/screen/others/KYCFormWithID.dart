@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:aura/screen/others/SafetyInformationForm.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +33,7 @@ class _KYCFormWithIDState extends State<KYCFormWithID> {
       TextEditingController();
 
   String selectedIDType = 'Passport';
-  File? idProof;
+
   bool isLoading = true;
 
   @override
@@ -58,6 +57,72 @@ class _KYCFormWithIDState extends State<KYCFormWithID> {
       }
     } catch (e) {
       print('Error fetching user data: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _pushkycData() async {
+    if (!_formKey.currentState!.validate()) {
+      return; // Prevent submission if the form is invalid
+    }
+
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      // Create a reference to the KYC subcollection under the user
+      CollectionReference kycCollection = firestore
+          .collection('users')
+          .doc(widget.userId)
+          .collection('KYCData');
+
+      // Add the KYC details
+      await kycCollection.add({
+        'fullName': fullNameController.text,
+        'dob': dobController.text,
+        'phoneNumber': phoneNumberController.text,
+        'email': emailController.text,
+        'address': addressController.text,
+        'emergencyContact': emergencyContactController.text,
+        'nationality': nationalityController.text,
+        'idType': selectedIDType,
+        'idNumber': idNumberController.text,
+        'issueDate': issueDateController.text,
+        'expiryDate': expiryDateController.text.isNotEmpty
+            ? expiryDateController.text
+            : null, // Store expiry date only if applicable
+        'issuingCountry': issuingCountryController.text.isNotEmpty
+            ? issuingCountryController.text
+            : null, // Store issuing country if applicable
+        'uploadedAt': FieldValue.serverTimestamp(), // Timestamp of submission
+      });
+
+      // Show a success message
+      Get.snackbar(
+        "Success",
+        "KYC data submitted successfully!",
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+
+      // Navigate to the next screen
+      Get.to(SafetyInformationForm(
+        userId: widget.userId,
+      ));
+    } catch (e) {
+      print("Error submitting KYC Data: $e");
+      Get.snackbar(
+        "Error",
+        "Failed to submit KYC data. Please try again.",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       setState(() {
         isLoading = false;
@@ -92,7 +157,7 @@ class _KYCFormWithIDState extends State<KYCFormWithID> {
         actions: [
           TextButton(
             onPressed: () {
-              Get.to(SafetyInformationForm());
+              // Get.to(SafetyInformationForm());
             },
             child: const Text(
               'Skip',
@@ -247,13 +312,6 @@ class _KYCFormWithIDState extends State<KYCFormWithID> {
                         return null;
                       }),
                     const SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () {},
-                      child: const Text('Upload ID Proof'),
-                    ),
-                    idProof == null
-                        ? const Text('No ID Proof Selected')
-                        : Text('ID Proof Selected: ${idProof!.path}'),
                     const SizedBox(height: 20),
                     GestureDetector(
                       onTap: () {
@@ -278,11 +336,34 @@ class _KYCFormWithIDState extends State<KYCFormWithID> {
                           ],
                         ),
                         child: Center(
-                          child: Text(
-                            "Next",
-                            style: GoogleFonts.comfortaa(
-                              color: Colors.white,
-                              fontSize: 16.0,
+                          child: GestureDetector(
+                            onTap: () {
+                              _pushkycData();
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 50.0, vertical: 15.0),
+                              decoration: BoxDecoration(
+                                color: const Color.fromARGB(255, 139, 3, 93),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.3),
+                                    spreadRadius: 2,
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "Next",
+                                  style: GoogleFonts.comfortaa(
+                                    color: Colors.white,
+                                    fontSize: 16.0,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
