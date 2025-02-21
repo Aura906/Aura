@@ -137,7 +137,6 @@ class _SignupPageState extends State<SignupPage> {
           fontSize: 16.0,
         );
       } else {
-        // Other authentication errors
         Fluttertoast.showToast(
           msg: e.message ?? 'An error occurred. Please try again.',
           toastLength: Toast.LENGTH_LONG,
@@ -216,32 +215,32 @@ class _SignupPageState extends State<SignupPage> {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 248, 237, 247),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(FontAwesomeIcons.chevronLeft),
-          onPressed: () async {
-            String Id = randomAlphaNumeric(10);
-            Map<String, dynamic> SignupPageIdfoMap = {
-              "firstName": firstNameController.text,
-              "lastName": lastNameController.text,
-              "id": Id,
-              "phone": phoneController.text,
-            };
-            await DatabaseMethods()
-                .addUsersDetails(SignupPageIdfoMap, Id)
-                .then((Value) {
-              Fluttertoast.showToast(
-                msg: "User Details has been uploaded successfully",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.CENTER,
-                backgroundColor: Colors.red,
-                textColor: Colors.white,
-                fontSize: 16.0,
-              );
-            });
+        // leading: IconButton(
+        //   icon: const Icon(FontAwesomeIcons.chevronLeft),
+        //   onPressed: () async {
+        //     String Id = randomAlphaNumeric(10);
+        //     Map<String, dynamic> SignupPageIdfoMap = {
+        //       "firstName": firstNameController.text,
+        //       "lastName": lastNameController.text,
+        //       "id": Id,
+        //       "phone": phoneController.text,
+        //     };
+        //     await DatabaseMethods()
+        //         .addUsersDetails(SignupPageIdfoMap, Id)
+        //         .then((Value) {
+        //       Fluttertoast.showToast(
+        //         msg: "User Details has been uploaded successfully",
+        //         toastLength: Toast.LENGTH_SHORT,
+        //         gravity: ToastGravity.CENTER,
+        //         backgroundColor: Colors.red,
+        //         textColor: Colors.white,
+        //         fontSize: 16.0,
+        //       );
+        //     });
 
-            // Get.back();
-          },
-        ),
+        //     // Get.back();
+        //   },
+        // ),
         title: RichText(
           textAlign: TextAlign.center,
           text: TextSpan(
