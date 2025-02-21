@@ -96,11 +96,6 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
-  void _logout() async {
-    await FirebaseAuth.instance.signOut();
-    Get.offAll(() => LoginScreen());
-  }
-
   @override
   Widget build(BuildContext context) {
     height = MediaQuery.of(context).size.height;
@@ -116,12 +111,12 @@ class _DashboardState extends State<Dashboard> {
               color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.sort, color: Colors.white, size: 30),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
+        // leading: Builder(
+        //   builder: (context) => IconButton(
+        //     icon: const Icon(Icons.sort, color: Colors.white, size: 30),
+        //     onPressed: () => Scaffold.of(context).openDrawer(),
+        //   ),
+        // ),
         actions: [
           InkWell(
             onTap: () {
@@ -139,7 +134,7 @@ class _DashboardState extends State<Dashboard> {
           ),
         ],
       ),
-      drawer: _buildDrawer(),
+      // drawer: _buildDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(5.0),
         child: Column(
@@ -164,75 +159,75 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildDrawer() {
-    return Drawer(
-      child: Container(
-        color: const Color(0xFFF1E6E6),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              padding: EdgeInsets.zero,
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFFF9A8D4), Color(0xFFFFC0CB)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 40,
-                      backgroundImage: NetworkImage(
-                        'https://purepng.com/public/uploads/large/purepng.com-female-studentstudentcollege-studentschool-studentfemale-student-14215269231647tn6r.png',
-                      ),
-                    ),
-                    const SizedBox(width: 15),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          userName,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'abc@gmail.com',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            ...dataTitle
-                .map((title) => _buildDrawerItem(Icons.dashboard, title, () {}))
-                .toList(),
-            const Divider(),
-            _buildDrawerItem(Icons.logout, "Logout", _logout),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildDrawer() {
+  //   return Drawer(
+  //     child: Container(
+  //       color: const Color(0xFFF1E6E6),
+  //       child: ListView(
+  //         padding: EdgeInsets.zero,
+  //         children: [
+  //           DrawerHeader(
+  //             padding: EdgeInsets.zero,
+  //             child: Container(
+  //               decoration: const BoxDecoration(
+  //                 gradient: LinearGradient(
+  //                   colors: [Color(0xFFF9A8D4), Color(0xFFFFC0CB)],
+  //                   begin: Alignment.topLeft,
+  //                   end: Alignment.bottomRight,
+  //                 ),
+  //               ),
+  //               padding: const EdgeInsets.all(20),
+  //               child: Row(
+  //                 children: [
+  //                   const CircleAvatar(
+  //                     radius: 40,
+  //                     backgroundImage: NetworkImage(
+  //                       'https://purepng.com/public/uploads/large/purepng.com-female-studentstudentcollege-studentschool-studentfemale-student-14215269231647tn6r.png',
+  //                     ),
+  //                   ),
+  //                   const SizedBox(width: 15),
+  //                   Column(
+  //                     crossAxisAlignment: CrossAxisAlignment.start,
+  //                     mainAxisAlignment: MainAxisAlignment.center,
+  //                     children: [
+  //                       Text(
+  //                         userName,
+  //                         style: const TextStyle(
+  //                           fontSize: 18,
+  //                           fontWeight: FontWeight.bold,
+  //                           color: Colors.white,
+  //                         ),
+  //                       ),
+  //                       const SizedBox(height: 4),
+  //                       const Text(
+  //                         'abc@gmail.com',
+  //                         style: TextStyle(
+  //                           fontSize: 14,
+  //                           color: Colors.white70,
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ),
+  //           ...dataTitle
+  //               .map((title) => _buildDrawerItem(Icons.dashboard, title, () {}))
+  //               .toList(),
+  //           const Divider(),
+  //           _buildDrawerItem(Icons.logout, "Logout", _logout),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildTopSection() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+      padding: const EdgeInsets.all(5.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text("$userName 😊",
               style:
@@ -242,12 +237,13 @@ class _DashboardState extends State<Dashboard> {
           const Text("Are You Safe?", style: TextStyle(fontSize: 20)),
           const SizedBox(height: 10),
           const SizedBox(height: 10),
-          ...kycDetails
-              .map((kyc) => Text("KYC ID: ${kyc['idNumber'] ?? 'N/A'}")),
-          ...safetyDetails.map(
-              (safety) => Text("Blood Type: ${safety['bloodType'] ?? 'N/A'}")),
-          ...safetyDetails.map((safety) =>
-              Text("Blood Type: ${safety['emergencyContacts'] ?? 'N/A'}")),
+          // ...kycDetails
+          //     .map((kyc) => Text("KYC ID: ${kyc['idNumber'] ?? 'N/A'}")),
+          // ...kycDetails.map((kyc) => Text("KYC ID: ${kyc['idType'] ?? 'N/A'}")),
+          // ...safetyDetails.map(
+          //     (safety) => Text("Blood Type: ${safety['bloodType'] ?? 'N/A'}")),
+          // ...safetyDetails.map((safety) =>
+          //     Text("Blood Type: ${safety['emergencyContacts'] ?? 'N/A'}")),
           ElevatedButton(
             onPressed: () {
               setState(() {

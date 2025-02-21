@@ -81,7 +81,7 @@ class _KYCFormWithIDState extends State<KYCFormWithID> {
           .collection('KYCData');
 
       // Add the KYC details
-      await kycCollection.add({
+      await kycCollection.doc('kycDetails').set({
         'fullName': fullNameController.text,
         'dob': dobController.text,
         'phoneNumber': phoneNumberController.text,
