@@ -22,8 +22,8 @@ class _KYCFormWithIDState extends State<KYCFormWithID> {
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
-  final TextEditingController emergencyContactController =
-      TextEditingController();
+  // final TextEditingController emergencyContactController =
+  // TextEditingController();
   final TextEditingController nationalityController = TextEditingController();
 
   final TextEditingController idNumberController = TextEditingController();
@@ -87,7 +87,7 @@ class _KYCFormWithIDState extends State<KYCFormWithID> {
         'phoneNumber': phoneNumberController.text,
         'email': emailController.text,
         'address': addressController.text,
-        'emergencyContact': emergencyContactController.text,
+        // 'emergencyContact': emergencyContactController.text,
         'nationality': nationalityController.text,
         'idType': selectedIDType,
         'idNumber': idNumberController.text,
@@ -137,7 +137,7 @@ class _KYCFormWithIDState extends State<KYCFormWithID> {
     phoneNumberController.dispose();
     emailController.dispose();
     addressController.dispose();
-    emergencyContactController.dispose();
+    // emergencyContactController.dispose();
     nationalityController.dispose();
     idNumberController.dispose();
     issueDateController.dispose();
@@ -221,15 +221,15 @@ class _KYCFormWithIDState extends State<KYCFormWithID> {
                       }
                       return null;
                     }),
-                    buildInputField(
-                        emergencyContactController,
-                        'Enter Emergency Contact Number',
-                        null, validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter an emergency contact number';
-                      }
-                      return null;
-                    }),
+                    // buildInputField(
+                    //     emergencyContactController,
+                    //     'Enter Emergency Contact Number',
+                    //     null, validator: (value) {
+                    //   if (value == null || value.isEmpty) {
+                    //     return 'Please enter an emergency contact number';
+                    //   }
+                    //   return null;
+                    // }),
                     buildInputField(
                         nationalityController, 'Enter Nationality', null,
                         validator: (value) {

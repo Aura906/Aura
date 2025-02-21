@@ -6,7 +6,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 class SafetyInformationForm extends StatefulWidget {
   final String userId;
-  SafetyInformationForm({required this.userId});
+
+  const SafetyInformationForm({Key? key, required this.userId})
+      : super(key: key);
 
   @override
   _SafetyInformationFormState createState() => _SafetyInformationFormState();
@@ -15,7 +17,6 @@ class SafetyInformationForm extends StatefulWidget {
 class _SafetyInformationFormState extends State<SafetyInformationForm> {
   final _formKey = GlobalKey<FormState>();
   bool isLoading = false;
-
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   final TextEditingController bloodTypeController = TextEditingController();
@@ -28,11 +29,7 @@ class _SafetyInformationFormState extends State<SafetyInformationForm> {
   @override
   void initState() {
     super.initState();
-    emergencyContacts.add({
-      'name': TextEditingController(),
-      'relationship': TextEditingController(),
-      'phone': TextEditingController(),
-    });
+    _addEmergencyContact(); // Start with one emergency contact
   }
 
   void _addEmergencyContact() {
@@ -46,7 +43,7 @@ class _SafetyInformationFormState extends State<SafetyInformationForm> {
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
             content: Text('You can add a maximum of 4 emergency contacts.')),
       );
     }
@@ -54,6 +51,9 @@ class _SafetyInformationFormState extends State<SafetyInformationForm> {
 
   void _removeEmergencyContact(int index) {
     setState(() {
+      emergencyContacts[index]['name']!.dispose();
+      emergencyContacts[index]['relationship']!.dispose();
+      emergencyContacts[index]['phone']!.dispose();
       emergencyContacts.removeAt(index);
     });
   }
@@ -79,9 +79,9 @@ class _SafetyInformationFormState extends State<SafetyInformationForm> {
       }).toList();
 
       await safetyInfoCollection.doc('info').set({
-        'bloodType': bloodTypeController.text,
-        'allergies': allergiesController.text,
-        'medicalConditions': medicalConditionsController.text,
+        'bloodType': bloodTypeController.text.trim(),
+        'allergies': allergiesController.text.trim(),
+        'medicalConditions': medicalConditionsController.text.trim(),
         'emergencyContacts': emergencyContactsList,
         'submittedAt': FieldValue.serverTimestamp(),
       });
@@ -90,7 +90,13 @@ class _SafetyInformationFormState extends State<SafetyInformationForm> {
           backgroundColor: Colors.green,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM);
-      Get.to(Dashboard(userId: widget.userId));
+
+      // Fetch user data to pass to Dashboard
+      DocumentSnapshot userDoc =
+          await firestore.collection('users').doc(widget.userId).get();
+      Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
+
+      Get.to(() => Dashboard(userId: widget.userId, userData: userData ?? {}));
     } catch (e) {
       Get.snackbar(
           "Error", "Failed to submit safety information. Please try again.",
@@ -107,21 +113,21 @@ class _SafetyInformationFormState extends State<SafetyInformationForm> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Emergency Contact ${index + 1}',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+            style: const TextStyle(fontWeight: FontWeight.bold)),
         TextFormField(
           controller: emergencyContacts[index]['name'],
-          decoration: InputDecoration(labelText: 'Contact Name'),
+          decoration: const InputDecoration(labelText: 'Contact Name'),
           validator: (value) => value!.isEmpty ? 'Please enter a name' : null,
         ),
         TextFormField(
           controller: emergencyContacts[index]['relationship'],
-          decoration: InputDecoration(labelText: 'Relationship'),
+          decoration: const InputDecoration(labelText: 'Relationship'),
           validator: (value) =>
               value!.isEmpty ? 'Please enter relationship' : null,
         ),
         TextFormField(
           controller: emergencyContacts[index]['phone'],
-          decoration: InputDecoration(labelText: 'Phone Number'),
+          decoration: const InputDecoration(labelText: 'Phone Number'),
           keyboardType: TextInputType.phone,
           validator: (value) =>
               value!.isEmpty ? 'Please enter phone number' : null,
@@ -129,7 +135,7 @@ class _SafetyInformationFormState extends State<SafetyInformationForm> {
         if (emergencyContacts.length > 1)
           IconButton(
             onPressed: () => _removeEmergencyContact(index),
-            icon: Icon(Icons.remove_circle, color: Colors.red),
+            icon: const Icon(Icons.remove_circle, color: Colors.red),
           ),
       ],
     );
@@ -156,13 +162,6 @@ class _SafetyInformationFormState extends State<SafetyInformationForm> {
         title: const Text('Safety Information Form'),
         centerTitle: true,
         backgroundColor: Colors.pinkAccent,
-        actions: [
-          TextButton(
-            onPressed: () => Get.to(Dashboard(userId: widget.userId)),
-            child: const Text('Skip',
-                style: TextStyle(color: Colors.white, fontSize: 16)),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -177,25 +176,27 @@ class _SafetyInformationFormState extends State<SafetyInformationForm> {
                   (index) => buildEmergencyContactField(index)),
               if (emergencyContacts.length < 4)
                 ElevatedButton(
-                    onPressed: _addEmergencyContact,
-                    child: const Text('Add Another Emergency Contact')),
+                  onPressed: _addEmergencyContact,
+                  child: const Text('Add Another Emergency Contact'),
+                ),
               const SizedBox(height: 20),
               const Text('Medical Information',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               TextFormField(
                 controller: bloodTypeController,
-                decoration: InputDecoration(labelText: 'Enter Blood Type'),
+                decoration:
+                    const InputDecoration(labelText: 'Enter Blood Type'),
                 validator: (value) =>
                     value!.isEmpty ? 'Please enter blood type' : null,
               ),
               TextFormField(
                 controller: allergiesController,
-                decoration: InputDecoration(labelText: 'Enter Allergies'),
+                decoration: const InputDecoration(labelText: 'Enter Allergies'),
               ),
               TextFormField(
                 controller: medicalConditionsController,
-                decoration:
-                    InputDecoration(labelText: 'Enter Medical Conditions'),
+                decoration: const InputDecoration(
+                    labelText: 'Enter Medical Conditions'),
               ),
               const SizedBox(height: 20),
               Center(
@@ -207,7 +208,7 @@ class _SafetyInformationFormState extends State<SafetyInformationForm> {
                     backgroundColor: const Color.fromARGB(255, 139, 3, 93),
                   ),
                   child: isLoading
-                      ? CircularProgressIndicator(color: Colors.white)
+                      ? const CircularProgressIndicator(color: Colors.white)
                       : Text("Next",
                           style: GoogleFonts.comfortaa(
                               color: Colors.white, fontSize: 16.0)),

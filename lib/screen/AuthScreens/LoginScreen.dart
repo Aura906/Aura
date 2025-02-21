@@ -2,6 +2,8 @@
 
 import 'package:aura/screen/AuthScreens/SignupPage.dart';
 import 'package:aura/screen/others/Dashboard.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -47,6 +49,8 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
+  FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
   void _performLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -54,19 +58,30 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       try {
-        // Simulated login process
-        await Future.delayed(const Duration(seconds: 2));
-        // Get.to(Dashboard());
-        // Navigate to Dashboard
-        Get.snackbar(
-          'Success',
-          'Logged in successfully!',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
+        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
         );
+
+        DocumentSnapshot userDoc = await _firestore
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .get();
+
+        // Explicitly cast to Map<String, dynamic>?
+        Map<String, dynamic>? userData =
+            userDoc.data() as Map<String, dynamic>?;
+
+        Get.to(() => Dashboard(
+              userId: userCredential.user!.uid,
+              userData: userData ?? {}, // Ensure it's always a valid map
+            ));
+
+        Get.snackbar('Success', 'Logged in successfully!',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green,
+            colorText: Colors.white);
       } catch (e) {
-        // Handle login errors
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Login failed: ${e.toString()}'),
