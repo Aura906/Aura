@@ -1,6 +1,7 @@
 // import 'dart:math';
 
 import 'package:aura/screen/AuthScreens/SignupPage.dart';
+import 'package:aura/screen/others/AuraSecureLogo.dart';
 import 'package:aura/screen/others/Dashboard.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -117,29 +118,11 @@ class _LoginScreenState extends State<LoginScreen> {
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
-          title: RichText(
-            text: TextSpan(
-              style: GoogleFonts.comfortaa(
-                fontSize: 28.0,
-                color: Colors.black,
-              ),
-              children: const [
-                TextSpan(
-                  text: 'Aura',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFfba7fc),
-                  ),
-                ),
-                TextSpan(
-                  text: 'Secure',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.black),
-                ),
-              ],
-            ),
+          title: AuraSecureLogo(
+            size: 60,
           ),
           centerTitle: true,
+          toolbarHeight: 100,
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),

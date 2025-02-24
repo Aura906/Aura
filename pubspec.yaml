@@ -42,6 +42,7 @@ dependencies:
   random_string: ^2.3.1
   google_fonts: ^6.2.1
   velocity_x: ^4.2.1
+  animate_do: ^3.0.2
   # country_code_picker: ^3.0.0
   get: ^4.6.6
   font_awesome_flutter: ^10.7.0
@@ -50,6 +51,7 @@ dependencies:
   permission_handler: ^11.3.1
   path_provider: ^2.0.11
   path: ^1.8.0
+  flutter_svg: ^2.0.17
   # file_picker: ^8.1.5
 
 dev_dependencies:

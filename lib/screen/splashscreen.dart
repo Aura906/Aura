@@ -1,4 +1,5 @@
 import 'package:aura/screen/AuthScreens/LoginScreen.dart';
+import 'package:aura/screen/others/AuraSecureLogo.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter/services.dart';
 
@@ -60,7 +61,9 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFFFF6B9E),
+              // Color(0xFFFF6B9E),
+              // Color(0xFF8E44AD),
+              Color.fromARGB(255, 255, 255, 255),
               Color(0xFF8E44AD),
             ],
           ),
@@ -76,14 +79,8 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
               SizedBox(height: 20),
-              Text(
-                'AuraSecure',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 1.2,
-                ),
+              AuraSecureLogo(
+                size: 80,
               ),
               SizedBox(height: 10),
               Text(

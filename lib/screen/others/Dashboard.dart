@@ -1,10 +1,12 @@
 import 'package:aura/screen/AuthScreens/LoginScreen.dart';
+import 'package:aura/screen/others/AuraSecureLogo.dart';
 import 'package:aura/screen/others/ProfileScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
+import 'package:animate_do/animate_do.dart';
 
 class Dashboard extends StatefulWidget {
   final String userId;
@@ -21,21 +23,31 @@ class _DashboardState extends State<Dashboard> {
   late double height, width;
   bool isNotSafe = false;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  bool isLoading = true;
   String userName = "Loading...";
   String? email;
-  String? phonenumber;
+  String? phoneNumber;
   String? gender;
   List<Map<String, dynamic>> kycDetails = [];
   List<Map<String, dynamic>> safetyDetails = [];
 
-  List<String> imageSource = [
-    "images/sos-button.png",
-    "images/panic1.png",
-    "images/camera.png",
-    "images/location.png",
+  List<Map<String, dynamic>> featureItems = [
+    {
+      "title": "SOS Alert",
+      "icon": "images/sos-button.png",
+      "color": Colors.red
+    },
+    {
+      "title": "Panic Mode",
+      "icon": "images/panic1.png",
+      "color": Colors.orange
+    },
+    {"title": "Live Camera", "icon": "images/camera.png", "color": Colors.blue},
+    {
+      "title": "Share Location",
+      "icon": "images/location.png",
+      "color": Colors.purple
+    },
   ];
-  List<String> dataTitle = ["SOS", "PANIC", "CAMERA", "LOCATION"];
 
   @override
   void initState() {
@@ -45,54 +57,40 @@ class _DashboardState extends State<Dashboard> {
 
   Future<void> fetchUserDetails() async {
     try {
-      // Fetch user document
       DocumentSnapshot userDoc =
           await firestore.collection('users').doc(widget.userId).get();
-
-      // Fetch all documents from KYCData subcollection
       QuerySnapshot kycSnapshot = await firestore
           .collection('users')
           .doc(widget.userId)
           .collection("KYCData")
           .get();
-
-      // Fetch all documents from SafetyInformation subcollection
       QuerySnapshot safetySnapshot = await firestore
           .collection('users')
           .doc(widget.userId)
           .collection("SafetyInformation")
           .get();
 
-      // Process User Data
       Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
-
-      // Process KYC Data
       List<Map<String, dynamic>> kycData = kycSnapshot.docs
           .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
-
-      // Process Safety Information Data
       List<Map<String, dynamic>> safetyData = safetySnapshot.docs
           .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
 
-      // Update state
       setState(() {
         userName = userData?['name'] ?? 'User';
         email = userData?['email'] ?? 'example@gmail.com';
-        gender = userData?['gender'] ?? 'gender';
-        phonenumber = userData?['phoneNumber'] ?? '999999999';
-
-        // Save fetched KYC & Safety Info data
+        gender = userData?['gender'] ?? 'Not specified';
+        phoneNumber = userData?['phoneNumber'] ?? 'Not provided';
         kycDetails = kycData;
         safetyDetails = safetyData;
       });
-
-      print("User Data: $userName");
-      print("KYC Data: $kycData");
-      print("Safety Data: $safetyData");
     } catch (e) {
       print('Error fetching user data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading data: $e')),
+      );
     }
   }
 
@@ -102,197 +100,271 @@ class _DashboardState extends State<Dashboard> {
     width = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: isNotSafe ? Colors.redAccent : const Color(0xFFF8D1D1),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const Text(
-          'Dashboard',
-          style: TextStyle(
-              color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        // leading: Builder(
-        //   builder: (context) => IconButton(
-        //     icon: const Icon(Icons.sort, color: Colors.white, size: 30),
-        //     onPressed: () => Scaffold.of(context).openDrawer(),
-        //   ),
-        // ),
-        actions: [
-          InkWell(
-            onTap: () {
-              Get.to(() => ProfileScreen(
-                  userId: widget.userId, userData: widget.userData));
-            },
-            child: Padding(
-              padding: const EdgeInsets.only(right: 15),
-              child: CircleAvatar(
-                radius: 20,
-                backgroundImage: NetworkImage(widget.userData['profileImage'] ??
-                    'https://www.pngall.com/wp-content/uploads/5/Profile-Avatar-PNG.png'),
-              ),
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: isNotSafe
+                ? [Colors.red[900]!, Colors.red[400]!]
+                : [Colors.pink[100]!, Colors.purple[100]!],
           ),
-        ],
-      ),
-      // drawer: _buildDrawer(),
-      body: Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: Column(
-          children: [
-            _buildTopSection(),
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 1.1,
-                  mainAxisSpacing: 25,
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildAppBar(),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        FadeInDown(child: _buildWelcomeSection()),
+                        SizedBox(height: 20),
+                        FadeInUp(child: _buildSafetyGrid()),
+                      ],
+                    ),
+                  ),
                 ),
-                itemCount: imageSource.length,
-                itemBuilder: (context, index) {
-                  return _buildFeatureButton(index);
-                },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // Widget _buildDrawer() {
-  //   return Drawer(
-  //     child: Container(
-  //       color: const Color(0xFFF1E6E6),
-  //       child: ListView(
-  //         padding: EdgeInsets.zero,
-  //         children: [
-  //           DrawerHeader(
-  //             padding: EdgeInsets.zero,
-  //             child: Container(
-  //               decoration: const BoxDecoration(
-  //                 gradient: LinearGradient(
-  //                   colors: [Color(0xFFF9A8D4), Color(0xFFFFC0CB)],
-  //                   begin: Alignment.topLeft,
-  //                   end: Alignment.bottomRight,
-  //                 ),
-  //               ),
-  //               padding: const EdgeInsets.all(20),
-  //               child: Row(
-  //                 children: [
-  //                   const CircleAvatar(
-  //                     radius: 40,
-  //                     backgroundImage: NetworkImage(
-  //                       'https://purepng.com/public/uploads/large/purepng.com-female-studentstudentcollege-studentschool-studentfemale-student-14215269231647tn6r.png',
-  //                     ),
-  //                   ),
-  //                   const SizedBox(width: 15),
-  //                   Column(
-  //                     crossAxisAlignment: CrossAxisAlignment.start,
-  //                     mainAxisAlignment: MainAxisAlignment.center,
-  //                     children: [
-  //                       Text(
-  //                         userName,
-  //                         style: const TextStyle(
-  //                           fontSize: 18,
-  //                           fontWeight: FontWeight.bold,
-  //                           color: Colors.white,
-  //                         ),
-  //                       ),
-  //                       const SizedBox(height: 4),
-  //                       const Text(
-  //                         'abc@gmail.com',
-  //                         style: TextStyle(
-  //                           fontSize: 14,
-  //                           color: Colors.white70,
-  //                         ),
-  //                       ),
-  //                     ],
-  //                   ),
-  //                 ],
-  //               ),
-  //             ),
-  //           ),
-  //           ...dataTitle
-  //               .map((title) => _buildDrawerItem(Icons.dashboard, title, () {}))
-  //               .toList(),
-  //           const Divider(),
-  //           _buildDrawerItem(Icons.logout, "Logout", _logout),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  Widget _buildTopSection() {
-    return Padding(
-      padding: const EdgeInsets.all(5.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+  Widget _buildAppBar() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text("$userName 😊",
-              style:
-                  const TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Text("$email", style: const TextStyle(fontSize: 15)),
-          const Text("Are You Safe?", style: TextStyle(fontSize: 20)),
-          const SizedBox(height: 10),
-          const SizedBox(height: 10),
-          // ...kycDetails
-          //     .map((kyc) => Text("KYC ID: ${kyc['idNumber'] ?? 'N/A'}")),
-          // ...kycDetails.map((kyc) => Text("KYC ID: ${kyc['idType'] ?? 'N/A'}")),
-          // ...safetyDetails.map(
-          //     (safety) => Text("Blood Type: ${safety['bloodType'] ?? 'N/A'}")),
-          // ...safetyDetails.map((safety) =>
-          //     Text("Blood Type: ${safety['emergencyContacts'] ?? 'N/A'}")),
+          AuraSecureLogo(
+            size: 60,
+            showShadow: true,
+          ),
+          ZoomIn(
+            child: InkWell(
+              onTap: () => Get.to(() => ProfileScreen(
+                  userId: widget.userId, userData: widget.userData)),
+              child: CircleAvatar(
+                radius: 22,
+                backgroundColor: Colors.white,
+                child: CircleAvatar(
+                  radius: 20,
+                  backgroundImage: NetworkImage(
+                    widget.userData['profileImage'] ??
+                        'https://www.pngall.com/wp-content/uploads/5/Profile-Avatar-PNG.png',
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWelcomeSection() {
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            "Welcome, $userName 👋",
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.pink[800],
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            "Your safety is our priority",
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+          ),
+          SizedBox(height: 15),
+          Text(
+            "Current Status",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          ),
+          SizedBox(height: 10),
           ElevatedButton(
             onPressed: () {
-              setState(() {
-                isNotSafe = !isNotSafe;
-              });
+              setState(() => isNotSafe = !isNotSafe);
+              if (isNotSafe) {
+                _showSafetyAlertDialog();
+              }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: isNotSafe ? Colors.red : Colors.green,
+              backgroundColor: isNotSafe ? Colors.red[700] : Colors.green[600],
+              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
             ),
-            child: Text(isNotSafe ? "I am Not Safe" : "I am Safe"),
+            child: Text(
+              isNotSafe ? "HELP! I'M IN DANGER" : "I'M SAFE",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFeatureButton(int index) {
-    return InkWell(
-      onTap: () {},
+  Widget _buildSafetyGrid() {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 1,
+        crossAxisSpacing: 15,
+        mainAxisSpacing: 15,
+      ),
+      itemCount: featureItems.length,
+      itemBuilder: (context, index) {
+        return ElasticIn(
+          child: _buildFeatureCard(
+            featureItems[index]['title'],
+            featureItems[index]['icon'],
+            featureItems[index]['color'],
+            index,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFeatureCard(String title, String icon, Color color, int index) {
+    return GestureDetector(
+      onTap: () => _handleFeatureTap(index),
       child: Container(
-        margin: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
           color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
           boxShadow: [
-            BoxShadow(color: Colors.black26, spreadRadius: 1, blurRadius: 8),
+            BoxShadow(
+              color: color.withOpacity(0.2),
+              blurRadius: 8,
+              spreadRadius: 2,
+            ),
           ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(imageSource[index], width: 100),
-            Text(dataTitle[index],
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.withOpacity(0.1),
+              ),
+              child: Image.asset(icon, width: 50),
+            ),
+            SizedBox(height: 10),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDrawerItem(IconData icon, String title, VoidCallback onTap) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.pinkAccent),
-      title: Text(
-        title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+  void _handleFeatureTap(int index) {
+    switch (index) {
+      case 0: // SOS Alert
+        _sendSOSAlert();
+        break;
+      case 1: // Panic Mode
+        _activatePanicMode();
+        break;
+      case 2: // Live Camera
+        _startLiveCamera();
+        break;
+      case 3: // Share Location
+        _shareLocation();
+        break;
+    }
+  }
+
+  void _showSafetyAlertDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title:
+            Text("Emergency Alert", style: TextStyle(color: Colors.red[800])),
+        content: Text(
+          "Would you like to notify your emergency contacts and local authorities?",
+          style: TextStyle(fontSize: 16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              _sendEmergencyNotification();
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red[700]),
+            child: Text("Yes, Send Help"),
+          ),
+        ],
       ),
-      onTap: onTap,
     );
+  }
+
+  // Placeholder methods for safety features
+  void _sendSOSAlert() {
+    // Implement SOS alert functionality
+    print("SOS Alert triggered");
+  }
+
+  void _activatePanicMode() {
+    // Implement panic mode functionality
+    print("Panic Mode activated");
+  }
+
+  void _startLiveCamera() {
+    // Implement live camera functionality
+    print("Live Camera started");
+  }
+
+  void _shareLocation() {
+    // Implement location sharing functionality
+    print("Location shared");
+  }
+
+  void _sendEmergencyNotification() {
+    // Implement emergency notification functionality
+    print("Emergency notification sent");
   }
 }
