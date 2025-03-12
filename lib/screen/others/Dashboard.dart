@@ -1,10 +1,8 @@
-import 'package:aura/screen/AuthScreens/LoginScreen.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:aura/screen/others/AuraSecureLogo.dart';
 import 'package:aura/screen/others/ProfileScreen.dart';
 import 'package:flutter/material.dart';
-import 'package:velocity_x/velocity_x.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:animate_do/animate_do.dart';
 
@@ -55,6 +53,8 @@ class _DashboardState extends State<Dashboard> {
     fetchUserDetails();
   }
 
+  // Add AudioPlayer instance
+  final AudioPlayer _audioPlayer = AudioPlayer();
   Future<void> fetchUserDetails() async {
     try {
       DocumentSnapshot userDoc =
@@ -138,6 +138,7 @@ class _DashboardState extends State<Dashboard> {
   Widget _buildAppBar() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      color: isNotSafe ? Colors.white : Colors.transparent,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -348,9 +349,16 @@ class _DashboardState extends State<Dashboard> {
     print("SOS Alert triggered");
   }
 
-  void _activatePanicMode() {
-    // Implement panic mode functionality
-    print("Panic Mode activated");
+  void _activatePanicMode() async {
+    // try {
+    //   await _audioPlayer.play(AssetSource('sound_alert.mp3'));
+    //   print("Panic Mode activated with sound");
+    // } catch (e) {
+    //   print("Error playing sound: $e");
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(content: Text('Error playing panic sound: $e')),
+    //   );
+    // }
   }
 
   void _startLiveCamera() {
