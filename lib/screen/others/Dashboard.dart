@@ -1,10 +1,12 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:aura/screen/others/AuraSecureLogo.dart';
 import 'package:aura/screen/others/ProfileScreen.dart';
+// import 'package:aura/service/Panic_mode.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class Dashboard extends StatefulWidget {
   final String userId;
@@ -20,15 +22,22 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   late double height, width;
   bool isNotSafe = false;
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  DatabaseReference? _panicModeRef;
+  bool isUpdatingPanicMode = false;
   String userName = "Loading...";
   String? email;
   String? phoneNumber;
   String? gender;
+  bool isPlaying = false;
+
   List<Map<String, dynamic>> kycDetails = [];
   List<Map<String, dynamic>> safetyDetails = [];
 
-  List<Map<String, dynamic>> featureItems = [
+  late AudioPlayer player; // Made instance variable
+
+  final List<Map<String, dynamic>> featureItems = [
     {
       "title": "SOS Alert",
       "icon": "images/sos-button.png",
@@ -50,11 +59,57 @@ class _DashboardState extends State<Dashboard> {
   @override
   void initState() {
     super.initState();
+    player = AudioPlayer();
+    _setupAudio();
     fetchUserDetails();
+
+    // Initialize Realtime Database reference
+    _panicModeRef = FirebaseDatabase.instance
+        .ref()
+        .child('users')
+        .child(widget.userId)
+        .child('panicMode');
+
+    // Listen to real-time updates
+    _setupPanicModeListener();
   }
 
-  // Add AudioPlayer instance
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  Future<void> _setupAudio() async {
+    try {
+      await player.setSource(AssetSource('sound_alert.mp3'));
+      await player.setReleaseMode(ReleaseMode.loop);
+    } catch (e) {
+      print("Error setting up audio: $e");
+    }
+  }
+
+  void _setupPanicModeListener() {
+    if (_panicModeRef != null) {
+      _panicModeRef!.onValue.listen((event) {
+        final value = event.snapshot.value;
+        if (value != null && mounted) {
+          final panicState = value == 1;
+          setState(() {
+            isPlaying = panicState;
+          });
+          // Sync audio with database state
+          if (panicState) {
+            player.resume();
+          } else {
+            player.stop();
+          }
+        }
+      }, onError: (error) {
+        print("Error listening to panic mode: $error");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error syncing panic mode: $error')),
+          );
+        }
+      });
+    }
+  }
+
   Future<void> fetchUserDetails() async {
     try {
       DocumentSnapshot userDoc =
@@ -78,20 +133,30 @@ class _DashboardState extends State<Dashboard> {
           .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
 
-      setState(() {
-        userName = userData?['name'] ?? 'User';
-        email = userData?['email'] ?? 'example@gmail.com';
-        gender = userData?['gender'] ?? 'Not specified';
-        phoneNumber = userData?['phoneNumber'] ?? 'Not provided';
-        kycDetails = kycData;
-        safetyDetails = safetyData;
-      });
+      if (mounted) {
+        setState(() {
+          userName = userData?['name'] ?? 'User';
+          email = userData?['email'] ?? 'example@gmail.com';
+          gender = userData?['gender'] ?? 'Not specified';
+          phoneNumber = userData?['phoneNumber'] ?? 'Not provided';
+          kycDetails = kycData;
+          safetyDetails = safetyData;
+        });
+      }
     } catch (e) {
       print('Error fetching user data: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading data: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading data: $e')),
+        );
+      }
     }
+  }
+
+  @override
+  void dispose() {
+    player.dispose();
+    super.dispose();
   }
 
   @override
@@ -121,7 +186,7 @@ class _DashboardState extends State<Dashboard> {
                     child: Column(
                       children: [
                         FadeInDown(child: _buildWelcomeSection()),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         FadeInUp(child: _buildSafetyGrid()),
                       ],
                     ),
@@ -137,12 +202,12 @@ class _DashboardState extends State<Dashboard> {
 
   Widget _buildAppBar() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       color: isNotSafe ? Colors.white : Colors.transparent,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          AuraSecureLogo(
+          const AuraSecureLogo(
             size: 60,
             showShadow: true,
           ),
@@ -170,11 +235,11 @@ class _DashboardState extends State<Dashboard> {
 
   Widget _buildWelcomeSection() {
     return Container(
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.9),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black12,
             blurRadius: 10,
@@ -192,17 +257,17 @@ class _DashboardState extends State<Dashboard> {
               color: Colors.pink[800],
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             "Your safety is our priority",
             style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
-          SizedBox(height: 15),
-          Text(
+          const SizedBox(height: 15),
+          const Text(
             "Current Status",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           ElevatedButton(
             onPressed: () {
               setState(() => isNotSafe = !isNotSafe);
@@ -212,14 +277,14 @@ class _DashboardState extends State<Dashboard> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: isNotSafe ? Colors.red[700] : Colors.green[600],
-              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
             ),
             child: Text(
               isNotSafe ? "HELP! I'M IN DANGER" : "I'M SAFE",
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -234,8 +299,8 @@ class _DashboardState extends State<Dashboard> {
   Widget _buildSafetyGrid() {
     return GridView.builder(
       shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: 1,
         crossAxisSpacing: 15,
@@ -274,14 +339,14 @@ class _DashboardState extends State<Dashboard> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: color.withOpacity(0.1),
               ),
               child: Image.asset(icon, width: 50),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               title,
               style: TextStyle(
@@ -321,14 +386,14 @@ class _DashboardState extends State<Dashboard> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title:
             Text("Emergency Alert", style: TextStyle(color: Colors.red[800])),
-        content: Text(
+        content: const Text(
           "Would you like to notify your emergency contacts and local authorities?",
           style: TextStyle(fontSize: 16),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Cancel"),
+            child: const Text("Cancel"),
           ),
           ElevatedButton(
             onPressed: () {
@@ -336,43 +401,88 @@ class _DashboardState extends State<Dashboard> {
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red[700]),
-            child: Text("Yes, Send Help"),
+            child: const Text("Yes, Send Help"),
           ),
         ],
       ),
     );
   }
 
-  // Placeholder methods for safety features
   void _sendSOSAlert() {
-    // Implement SOS alert functionality
     print("SOS Alert triggered");
   }
 
   void _activatePanicMode() async {
-    // try {
-    //   await _audioPlayer.play(AssetSource('sound_alert.mp3'));
-    //   print("Panic Mode activated with sound");
-    // } catch (e) {
-    //   print("Error playing sound: $e");
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     SnackBar(content: Text('Error playing panic sound: $e')),
-    //   );
-    // }
+    try {
+      if (isPlaying) {
+        await player.stop();
+        isNotSafe = false;
+      } else {
+        await player.resume();
+        isNotSafe = true;
+      }
+      setState(() {
+        isPlaying = !isPlaying;
+      });
+      // if (!isPlaying) {
+      //   Get.to(() => const PanicMode());
+      // }
+    } catch (e) {
+      print("Error in panic mode: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error in panic mode: $e')),
+        );
+      }
+    }
   }
 
+  // void _activatePanicMode() async {
+  //   if (isUpdatingPanicMode) return; // Prevent multiple simultaneous updates
+
+  //   try {
+  //     setState(() => isUpdatingPanicMode = true);
+
+  //     if (isPlaying) {
+  //       await player.stop();
+  //       isNotSafe = false;
+  //       await _panicModeRef!.set(0);
+  //     } else {
+  //       await player.resume();
+  //       isNotSafe = true;
+  //       await _panicModeRef!.set(1);
+  //     }
+
+  //     if (mounted) {
+  //       setState(() {
+  //         isPlaying = !isPlaying;
+  //         isUpdatingPanicMode = false;
+  //       });
+  //     }
+
+  //     // if (!isPlaying) {
+  //     //   Get.to(() => const PanicMode());
+  //     // }
+  //   } catch (e) {
+  //     print("Error updating panic mode: $e");
+  //     if (mounted) {
+  //       setState(() => isUpdatingPanicMode = false);
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text('Error updating panic mode: $e')),
+  //       );
+  //     }
+  //   }
+  // }
+
   void _startLiveCamera() {
-    // Implement live camera functionality
     print("Live Camera started");
   }
 
   void _shareLocation() {
-    // Implement location sharing functionality
     print("Location shared");
   }
 
   void _sendEmergencyNotification() {
-    // Implement emergency notification functionality
     print("Emergency notification sent");
   }
 }
