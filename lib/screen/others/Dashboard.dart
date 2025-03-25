@@ -412,67 +412,67 @@ class _DashboardState extends State<Dashboard> {
     print("SOS Alert triggered");
   }
 
-  void _activatePanicMode() async {
-    try {
-      if (isPlaying) {
-        await player.stop();
-        isNotSafe = false;
-      } else {
-        await player.resume();
-        isNotSafe = true;
-      }
-      setState(() {
-        isPlaying = !isPlaying;
-      });
-      // if (!isPlaying) {
-      //   Get.to(() => const PanicMode());
-      // }
-    } catch (e) {
-      print("Error in panic mode: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error in panic mode: $e')),
-        );
-      }
-    }
-  }
-
   // void _activatePanicMode() async {
-  //   if (isUpdatingPanicMode) return; // Prevent multiple simultaneous updates
-
   //   try {
-  //     setState(() => isUpdatingPanicMode = true);
-
   //     if (isPlaying) {
   //       await player.stop();
   //       isNotSafe = false;
-  //       await _panicModeRef!.set(0);
   //     } else {
   //       await player.resume();
   //       isNotSafe = true;
-  //       await _panicModeRef!.set(1);
   //     }
-
-  //     if (mounted) {
-  //       setState(() {
-  //         isPlaying = !isPlaying;
-  //         isUpdatingPanicMode = false;
-  //       });
-  //     }
-
+  //     setState(() {
+  //       isPlaying = !isPlaying;
+  //     });
   //     // if (!isPlaying) {
   //     //   Get.to(() => const PanicMode());
   //     // }
   //   } catch (e) {
-  //     print("Error updating panic mode: $e");
+  //     print("Error in panic mode: $e");
   //     if (mounted) {
-  //       setState(() => isUpdatingPanicMode = false);
   //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text('Error updating panic mode: $e')),
+  //         SnackBar(content: Text('Error in panic mode: $e')),
   //       );
   //     }
   //   }
   // }
+
+  void _activatePanicMode() async {
+    if (isUpdatingPanicMode) return; // Prevent multiple simultaneous updates
+
+    try {
+      setState(() => isUpdatingPanicMode = true);
+
+      if (isPlaying) {
+        await player.stop();
+        isNotSafe = false;
+        await _panicModeRef!.set(0);
+      } else {
+        await player.resume();
+        isNotSafe = true;
+        await _panicModeRef!.set(1);
+      }
+
+      if (mounted) {
+        setState(() {
+          isPlaying = !isPlaying;
+          isUpdatingPanicMode = false;
+        });
+      }
+
+      // if (!isPlaying) {
+      //   Get.to(() => const PanicMode());
+      // }
+    } catch (e) {
+      print("Error updating panic mode: $e");
+      if (mounted) {
+        setState(() => isUpdatingPanicMode = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating panic mode: $e')),
+        );
+      }
+    }
+  }
 
   void _startLiveCamera() {
     print("Live Camera started");
