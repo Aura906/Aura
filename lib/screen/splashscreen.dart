@@ -64,7 +64,7 @@ class _SplashScreenState extends State<SplashScreen>
               // Color(0xFFFF6B9E),
               // Color(0xFF8E44AD),
               Color.fromARGB(255, 255, 255, 255),
-              Color(0xFF8E44AD),
+              Color.fromARGB(255, 234, 57, 178),
             ],
           ),
         ),

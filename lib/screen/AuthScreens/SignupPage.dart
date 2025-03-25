@@ -1,4 +1,5 @@
 import 'package:aura/screen/others/KYCFormWithID.dart';
+// import 'package:aura/service/notification_service.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -216,7 +217,7 @@ class _SignupPageState extends State<SignupPage> {
         // leading: IconButton(
         //   icon: const Icon(FontAwesomeIcons.chevronLeft),
         //   onPressed: () async {
-        //     String Id = randomAlphaNumeric(10);
+        //     String Id = randomAlph aNumeric(10);
         //     Map<String, dynamic> SignupPageIdfoMap = {
         //       "firstName": firstNameController.text,
         //       "lastName": lastNameController.text,
@@ -321,6 +322,55 @@ class _SignupPageState extends State<SignupPage> {
                         fontSize: 16.0,
                       ),
                     ),
+
+// myself
+
+//  onPressed: () async {
+                    // NotificationService notificationService = NotificationService();
+//   await notificationService.requestPermission(); // Request permission
+//   String? userDeviceToken = await notificationService.getDeviceToken();
+
+                    // String name = username.text.trim();
+                    // String email = userEmail.text.trim();
+                    // String phone = userPhone.text.trim();
+                    // String city = userCity.text.trim();
+                    // String password = userPassword.text.trim();
+                    //  String userDeviceToken = await notificationService.getDeviceToken();
+
+                    // if (name.isEmpty || email.isEmpty || phone.isEmpty || city.isEmpty || password.isEmpty) {
+                    //   Get.snackbar(
+                    //     "Error",
+                    //     "Please enter all details",
+                    //     snackPosition: SnackPosition.BOTTOM,
+                    //     backgroundColor: AppConstant.appScendoryColor,
+                    //     colorText: AppConstant.appTextColor,
+                    //   );
+                    // } else {
+                    // UserCredential? userCredential = await signUpController.signUpMethod(
+//       name,
+//       email,
+//       phone,
+//       city,
+//       password,
+                    //     userDeviceToken,
+                    //   );
+                    // }
+//     if (userCredential != null) {
+//       Get.snackbar(
+//         "Verification email sent.",
+//         "Please check your email.",
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: AppConstant.appScendoryColor,
+//         colorText: AppConstant.appTextColor,
+//       );
+
+//       FirebaseAuth.instance.signOut();
+//       Get.offAll(() => SignInScreen());
+//     }
+//   }
+// }
+
+//
                   ),
                 ),
               )

@@ -254,6 +254,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+}
 
   //  goToSignup(BuildContext context) => Navigator.push(
   //       context,
@@ -273,4 +274,4 @@ class _LoginScreenState extends State<LoginScreen> {
   //      log("User Logged In");
   //     goToHome(context);
   //   }
-}
+

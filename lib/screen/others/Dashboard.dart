@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:aura/screen/Panicscreen.dart';
 
 class Dashboard extends StatefulWidget {
   final String userId;
@@ -297,13 +298,33 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
+  // void _handleFeatureTap(int index) {
+  //   switch (index) {
+  //     case 0: // SOS Alert
+  //       _sendSOSAlert();
+  //       break;
+  //     case 1: // Panic Mode
+  //       _activatePanicMode();
+  //       break;
+  //     case 2: // Live Camera
+  //       _startLiveCamera();
+  //       break;
+  //     case 3: // Share Location
+  //       _shareLocation();
+  //       break;
+  //   }
+  // }
+
   void _handleFeatureTap(int index) {
     switch (index) {
       case 0: // SOS Alert
         _sendSOSAlert();
         break;
       case 1: // Panic Mode
-        _activatePanicMode();
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => PanicScreen()),
+        );
         break;
       case 2: // Live Camera
         _startLiveCamera();
@@ -345,20 +366,37 @@ class _DashboardState extends State<Dashboard> {
 
   // Placeholder methods for safety features
   void _sendSOSAlert() {
-    // Implement SOS alert functionality
+    //   // Implement SOS alert functionality
     print("SOS Alert triggered");
   }
 
+//   void _sendSOSAlert() async {
+//   try {
+//     DatabaseReference ref = FirebaseDatabase.instance.ref("alerts/${widget.userId}");
+//     String alertId = ref.push().key!;
+//     await ref.child(alertId).set({
+//       "timestamp": DateTime.now().toIso8601String(),
+//       "message": "SOS Alert Triggered",
+//     });
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       SnackBar(content: Text("SOS Alert Sent Successfully")),
+//     );
+//     print("SOS Alert triggered and stored in Firebase.");
+//   } catch (e) {
+//     print("Error sending SOS Alert: $e");
+//   }
+// }
+
   void _activatePanicMode() async {
-    // try {
-    //   await _audioPlayer.play(AssetSource('sound_alert.mp3'));
-    //   print("Panic Mode activated with sound");
-    // } catch (e) {
-    //   print("Error playing sound: $e");
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     SnackBar(content: Text('Error playing panic sound: $e')),
-    //   );
-    // }
+    try {
+      await _audioPlayer.play(AssetSource('sound_alert.mp3'));
+      print("Panic Mode activated with sound");
+    } catch (e) {
+      print("Error playing sound: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error playing panic sound: $e')),
+      );
+    }
   }
 
   void _startLiveCamera() {
