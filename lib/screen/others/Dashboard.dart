@@ -434,23 +434,6 @@ class _DashboardState extends State<Dashboard> {
     print("SOS Alert triggered");
   }
 
-//   void _sendSOSAlert() async {
-//   try {
-//     DatabaseReference ref = FirebaseDatabase.instance.ref("alerts/${widget.userId}");
-//     String alertId = ref.push().key!;
-//     await ref.child(alertId).set({
-//       "timestamp": DateTime.now().toIso8601String(),
-//       "message": "SOS Alert Triggered",
-//     });
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       SnackBar(content: Text("SOS Alert Sent Successfully")),
-//     );
-//     print("SOS Alert triggered and stored in Firebase.");
-//   } catch (e) {
-//     print("Error sending SOS Alert: $e");
-//   }
-// }
-
   // void _activatePanicMode() async {
   //   try {
   //     if (isPlaying) {
@@ -498,6 +481,10 @@ class _DashboardState extends State<Dashboard> {
           isUpdatingPanicMode = false;
         });
       }
+
+      // if (!isPlaying) {
+      //   Get.to(() => const PanicMode());
+      // }
     } catch (e) {
       print("Error updating panic mode: $e");
       if (mounted) {
