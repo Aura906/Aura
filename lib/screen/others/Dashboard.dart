@@ -1,6 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:aura/screen/others/AuraSecureLogo.dart';
 import 'package:aura/screen/others/ProfileScreen.dart';
+import 'package:aura/service/Location.dart';
 // import 'package:aura/service/Panic_mode.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -501,7 +502,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void _shareLocation() {
-    print("Location shared");
+    Get.to(Location());
   }
 
   void _sendEmergencyNotification() {

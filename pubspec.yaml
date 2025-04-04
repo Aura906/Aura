@@ -51,7 +51,7 @@ dependencies:
   audioplayers: ^5.2.1       # For playing alarm sound
   # For audio recording
   record: ^5.1.0
-  geolocator: ^10.1.0
+  geolocator: ^13.0.4
   permission_handler: ^11.0.1
   path_provider: ^2.1.1
   share_plus: ^7.2.1  # Add this
@@ -62,6 +62,7 @@ dependencies:
 
   just_audio: ^0.9.46
   firebase_database: ^11.3.4
+  geocoding: ^3.0.0
 
 
 dev_dependencies:
