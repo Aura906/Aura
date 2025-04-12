@@ -1,5 +1,6 @@
 // import 'package:aura/service/get_service_key.dart';
 // import 'package:aura/api/firebase_api.dart';
+import 'package:aura/service/RecordingPage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 // import 'package:aura/service/notification_service.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:aura/screen/splashscreen.dart';
 import 'package:flutter/foundation.dart'; // For kIsWeb
+// import 'audio_recorder.dart';  // Import the audio recorder file
 
 // import 'package:url_launcher/url_launcher.dart';
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -64,10 +66,21 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// class SplashScreen extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     Future.delayed(Duration(seconds: 3), () {
+//       Navigator.pushReplacement(
+//         context,
+//         MaterialPageRoute(builder: (context) => AudioRecorder()),
+//       );
+//     });
 
-
-
-
+//     return Scaffold(
+//       body: Center(child: Text("home page.....")),
+//     );
+//   }
+// }
 
 
 

@@ -63,6 +63,7 @@ dependencies:
   just_audio: ^0.9.46
   firebase_database: ^11.3.4
   geocoding: ^3.0.0
+  flutter_sound: ^9.28.0
 
 
 dev_dependencies:

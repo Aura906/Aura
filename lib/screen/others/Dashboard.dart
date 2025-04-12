@@ -2,6 +2,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:aura/screen/others/AuraSecureLogo.dart';
 import 'package:aura/screen/others/ProfileScreen.dart';
 import 'package:aura/service/Location.dart';
+import 'package:aura/service/RecordingPage.dart';
 // import 'package:aura/service/Panic_mode.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -23,6 +24,8 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   late double height, width;
   bool isNotSafe = false;
+  AudioPlayer player = AudioPlayer();
+  bool isPlaying = false;
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   DatabaseReference? _panicModeRef;
@@ -32,13 +35,16 @@ class _DashboardState extends State<Dashboard> {
   String? email;
   String? phoneNumber;
   String? gender;
-  bool isPlaying = false;
+  // bool isPlaying = false;
 
   List<Map<String, dynamic>> kycDetails = [];
   List<Map<String, dynamic>> safetyDetails = [];
 
-  late AudioPlayer player; // Made instance variable
+  // late AudioPlayer player; // Made instance variable
 
+//
+
+//
   final List<Map<String, dynamic>> featureItems = [
     {
       "title": "SOS Alert",
@@ -50,7 +56,7 @@ class _DashboardState extends State<Dashboard> {
       "icon": "images/panic1.png",
       "color": Colors.orange
     },
-    {"title": "Live Camera", "icon": "images/camera.png", "color": Colors.blue},
+    {"title": "Start Audio", "icon": "images/audio.png", "color": Colors.blue},
     {
       "title": "Share Location",
       "icon": "images/location.png",
@@ -393,8 +399,11 @@ class _DashboardState extends State<Dashboard> {
         // );
         _activatePanicMode();
         break;
-      case 2: // Live Camera
-        _startLiveCamera();
+      case 2: // Start Audio
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => RecordingPage()),
+        );
         break;
       case 3: // Share Location
         _shareLocation();
