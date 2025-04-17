@@ -1,5 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <!-- permission for calling  -->
+    <uses-permission android:name="android.permission.CALL_PHONE"/>
 
     <!-- Permissions required by the app -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
@@ -10,6 +13,9 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="replace"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.CALL_PHONE"/> <!-- Added for SOS button phone calls -->
 
     <application
         android:label="aura"
@@ -17,6 +23,7 @@
         android:icon="@mipmap/ic_launcher"
         android:enableOnBackInvokedCallback="true"
         android:theme="@style/NormalTheme">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -36,7 +43,17 @@
             </intent-filter>
         </activity>
 
-        <!-- Foreground service for audio playback (used by flutter_sound or just_audio_background) -->
+        <!-- Firebase Messaging Service with corrected exported attribute -->
+        <service
+            android:name="com.google.firebase.messaging.FirebaseMessagingService"
+            android:exported="false"
+            tools:replace="android:exported">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+
+        <!-- Foreground service for audio playback -->
         <service
             android:name="com.ryanheise.audioservice.AudioService"
             android:exported="false"

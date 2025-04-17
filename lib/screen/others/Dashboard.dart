@@ -9,6 +9,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:url_launcher/url_launcher.dart'; // Add this line
+import 'package:permission_handler/permission_handler.dart';  
+
 
 class Dashboard extends StatefulWidget {
   final String userId;
@@ -440,9 +443,111 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  void _sendSOSAlert() {
-    print("SOS Alert triggered");
+  // void _sendSOSAlert() {
+  //   print("SOS Alert triggered");
+  // }
+
+
+
+// myself
+
+
+
+  void _sendSOSAlert() async {
+  if (safetyDetails.isNotEmpty) {
+    // Show dialog to choose emergency contact
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text("Select Emergency Contact", style: TextStyle(color: Colors.red[800])),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: safetyDetails.map((contact) {
+              String contactNumber = contact['emergencyContactNumber'] ?? 'N/A';
+              String contactName = contact['emergencyContactName'] ?? 'Unknown';
+              return ListTile(
+                title: Text(contactName),
+                subtitle: Text(contactNumber),
+                onTap: () async {
+                  final Uri phoneUri = Uri(scheme: 'tel', path: contactNumber);
+                  try {
+                    if (await canLaunchUrl(phoneUri)) {
+                      await launchUrl(phoneUri);
+                      print("SOS Alert: Initiated call to $contactNumber");
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Unable to make phone call')),
+                      );
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error making phone call: $e')),
+                    );
+                  }
+                  Navigator.pop(context);
+                },
+              );
+            }).toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              // Fallback to default emergency number
+              String emergencyNumber = '911';
+              final Uri phoneUri = Uri(scheme: 'tel', path: emergencyNumber);
+              try {
+                if (await canLaunchUrl(phoneUri)) {
+                  await launchUrl(phoneUri);
+                  print("SOS Alert: Initiated call to $emergencyNumber");
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Unable to make phone call')),
+                  );
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error making phone call: $e')),
+                );
+              }
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red[700]),
+            child: const Text("Call 911"),
+          ),
+        ],
+      ),
+    );
+  } else {
+    // No emergency contacts, call default emergency number
+    String emergencyNumber = '911';
+    final Uri phoneUri = Uri(scheme: 'tel', path: emergencyNumber);
+    try {
+      if (await canLaunchUrl(phoneUri)) {
+        await launchUrl(phoneUri);
+        print("SOS Alert: Initiated call to $emergencyNumber");
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to make phone call')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error making phone call: $e')),
+      );
+    }
   }
+}
+
+// myself 
+
+
 
   // void _activatePanicMode() async {
   //   try {
@@ -468,6 +573,7 @@ class _DashboardState extends State<Dashboard> {
   //     }
   //   }
   // }
+
 
   void _activatePanicMode() async {
     if (isUpdatingPanicMode) return; // Prevent multiple simultaneous updates
