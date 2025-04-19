@@ -1,15 +1,11 @@
-
-
-
-// myself
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
-// import 'package:upload_to_firebase/home/view/home_view.dart';
+import 'package:share_plus/share_plus.dart'; // Add share_plus for sharing
+
 class RecordingPage extends StatefulWidget {
   const RecordingPage({super.key});
 
@@ -22,12 +18,14 @@ class _RecordingPageState extends State<RecordingPage> {
   final AudioPlayer audioPlayer = AudioPlayer();
   bool isRecording = false;
   bool isPlaying = false;
-  // bool _isUploading;
   String? recordingPath;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Record Audio"),
+      ),
       floatingActionButton: _recordingButton(),
       body: _buildUI(),
     );
@@ -40,7 +38,7 @@ class _RecordingPageState extends State<RecordingPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          if (recordingPath != null)
+          if (recordingPath != null) ...[
             MaterialButton(
               onPressed: () async {
                 if (isPlaying) {
@@ -63,6 +61,18 @@ class _RecordingPageState extends State<RecordingPage> {
                 style: const TextStyle(color: Colors.white),
               ),
             ),
+            const SizedBox(height: 20),
+            MaterialButton(
+              onPressed: () {
+                _shareRecording();
+              },
+              color: Colors.purple,
+              child: const Text(
+                "Share Recording",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
           if (recordingPath == null) const Text("No Recording Found :("),
         ],
       ),
@@ -101,6 +111,21 @@ class _RecordingPageState extends State<RecordingPage> {
     );
   }
 
+  void _shareRecording() async {
+    if (recordingPath != null) {
+      final file = XFile(recordingPath!);
+      await Share.shareXFiles(
+        [file],
+        text: "My recorded audio from AuraSecure",
+        subject: "Audio Recording",
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No recording available to share")),
+      );
+    }
+  }
+
   @override
   void dispose() {
     audioRecorder.dispose();
@@ -108,13 +133,3 @@ class _RecordingPageState extends State<RecordingPage> {
     super.dispose();
   }
 }
-
-void main() {
-  runApp(MaterialApp(
-    home: RecordingPage(),
-  ));
-}
-
-
-
-

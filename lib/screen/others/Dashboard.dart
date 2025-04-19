@@ -1,17 +1,16 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:aura/screen/others/AuraSecureLogo.dart';
 import 'package:aura/screen/others/ProfileScreen.dart';
+import 'package:aura/service/LiveLocationViewer.dart';
 import 'package:aura/service/Location.dart';
 import 'package:aura/service/RecordingPage.dart';
-// import 'package:aura/service/Panic_mode.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:url_launcher/url_launcher.dart'; // Add this line
-import 'package:permission_handler/permission_handler.dart';  
-
+import 'package:url_launcher/url_launcher.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class Dashboard extends StatefulWidget {
   final String userId;
@@ -27,7 +26,7 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   late double height, width;
   bool isNotSafe = false;
-  AudioPlayer player = AudioPlayer();
+  final AudioPlayer player = AudioPlayer();
   bool isPlaying = false;
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -38,51 +37,65 @@ class _DashboardState extends State<Dashboard> {
   String? email;
   String? phoneNumber;
   String? gender;
-  // bool isPlaying = false;
 
   List<Map<String, dynamic>> kycDetails = [];
   List<Map<String, dynamic>> safetyDetails = [];
 
-  // late AudioPlayer player; // Made instance variable
-
-//
-
-//
   final List<Map<String, dynamic>> featureItems = [
     {
       "title": "SOS Alert",
       "icon": "images/sos-button.png",
-      "color": Colors.red
+      "color": Colors.red,
     },
     {
       "title": "Panic Mode",
       "icon": "images/panic1.png",
-      "color": Colors.orange
+      "color": Colors.orange,
     },
-    {"title": "Start Audio", "icon": "images/audio.png", "color": Colors.blue},
+    {
+      "title": "Start Audio",
+      "icon": "images/audio.png",
+      "color": Colors.blue,
+    },
     {
       "title": "Share Location",
       "icon": "images/location.png",
-      "color": Colors.purple
+      "color": Colors.purple,
     },
   ];
 
   @override
   void initState() {
     super.initState();
-    player = AudioPlayer();
     _setupAudio();
     fetchUserDetails();
-
-    // Initialize Realtime Database reference
     _panicModeRef = FirebaseDatabase.instance
         .ref()
         .child('users')
         .child(widget.userId)
         .child('panicMode');
-
-    // Listen to real-time updates
     _setupPanicModeListener();
+    _requestPermissions();
+  }
+
+  Future<void> _requestPermissions() async {
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.phone,
+      Permission.location,
+      Permission.microphone,
+    ].request();
+
+    if (statuses[Permission.phone]!.isDenied ||
+        statuses[Permission.location]!.isDenied ||
+        statuses[Permission.microphone]!.isDenied) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Please grant all required permissions to use all features.')),
+        );
+      }
+    }
   }
 
   Future<void> _setupAudio() async {
@@ -91,34 +104,37 @@ class _DashboardState extends State<Dashboard> {
       await player.setReleaseMode(ReleaseMode.loop);
     } catch (e) {
       print("Error setting up audio: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error setting up audio: $e')),
+        );
+      }
     }
   }
 
   void _setupPanicModeListener() {
-    if (_panicModeRef != null) {
-      _panicModeRef!.onValue.listen((event) {
-        final value = event.snapshot.value;
-        if (value != null && mounted) {
-          final panicState = value == 1;
-          setState(() {
-            isPlaying = panicState;
-          });
-          // Sync audio with database state
-          if (panicState) {
-            player.resume();
-          } else {
-            player.stop();
-          }
+    _panicModeRef?.onValue.listen((event) {
+      final value = event.snapshot.value;
+      if (value != null && mounted) {
+        final panicState = value == 1;
+        setState(() {
+          isPlaying = panicState;
+          isNotSafe = panicState;
+        });
+        if (panicState) {
+          player.resume();
+        } else {
+          player.stop();
         }
-      }, onError: (error) {
-        print("Error listening to panic mode: $error");
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error syncing panic mode: $error')),
-          );
-        }
-      });
-    }
+      }
+    }, onError: (error) {
+      print("Error listening to panic mode: $error");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error syncing panic mode: $error')),
+        );
+      }
+    });
   }
 
   Future<void> fetchUserDetails() async {
@@ -158,7 +174,8 @@ class _DashboardState extends State<Dashboard> {
       print('Error fetching user data: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading data: $e')),
+          SnackBar(
+              content: Text('Failed to load user data. Please try again.')),
         );
       }
     }
@@ -199,6 +216,8 @@ class _DashboardState extends State<Dashboard> {
                         FadeInDown(child: _buildWelcomeSection()),
                         const SizedBox(height: 20),
                         FadeInUp(child: _buildSafetyGrid()),
+                        const SizedBox(height: 20),
+                        _buildLiveLocationPanel(),
                       ],
                     ),
                   ),
@@ -218,10 +237,7 @@ class _DashboardState extends State<Dashboard> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const AuraSecureLogo(
-            size: 60,
-            showShadow: true,
-          ),
+          const AuraSecureLogo(size: 60, showShadow: true),
           ZoomIn(
             child: InkWell(
               onTap: () => Get.to(() => ProfileScreen(
@@ -240,6 +256,48 @@ class _DashboardState extends State<Dashboard> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLiveLocationPanel() {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                LiveLocationViewer(sharedUserId: widget.userId),
+          ),
+        );
+      },
+      child: Container(
+        height: 40,
+        width: width * 0.9, // Responsive width
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 10,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Center(
+            child: Text(
+              'Live Location Track',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.purple[800],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -373,39 +431,18 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  // void _handleFeatureTap(int index) {
-  //   switch (index) {
-  //     case 0: // SOS Alert
-  //       _sendSOSAlert();
-  //       break;
-  //     case 1: // Panic Mode
-  //       _activatePanicMode();
-  //       break;
-  //     case 2: // Live Camera
-  //       _startLiveCamera();
-  //       break;
-  //     case 3: // Share Location
-  //       _shareLocation();
-  //       break;
-  //   }
-  // }
-
   void _handleFeatureTap(int index) {
     switch (index) {
       case 0: // SOS Alert
         _sendSOSAlert();
         break;
       case 1: // Panic Mode
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => PanicScreen()),
-        // );
         _activatePanicMode();
         break;
       case 2: // Start Audio
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => RecordingPage()),
+          MaterialPageRoute(builder: (context) => const RecordingPage()),
         );
         break;
       case 3: // Share Location
@@ -443,184 +480,145 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  // void _sendSOSAlert() {
-  //   print("SOS Alert triggered");
-  // }
-
-
-
-// myself
-
-
-
   void _sendSOSAlert() async {
-  if (safetyDetails.isNotEmpty) {
-    // Show dialog to choose emergency contact
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text("Select Emergency Contact", style: TextStyle(color: Colors.red[800])),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: safetyDetails.map((contact) {
-              String contactNumber = contact['emergencyContactNumber'] ?? 'N/A';
-              String contactName = contact['emergencyContactName'] ?? 'Unknown';
-              return ListTile(
-                title: Text(contactName),
-                subtitle: Text(contactNumber),
-                onTap: () async {
-                  final Uri phoneUri = Uri(scheme: 'tel', path: contactNumber);
-                  try {
-                    if (await canLaunchUrl(phoneUri)) {
-                      await launchUrl(phoneUri);
-                      print("SOS Alert: Initiated call to $contactNumber");
-                    } else {
+    // Simple country-based emergency number (enhance with geolocation if needed)
+    String emergencyNumber = '911'; // Default for US
+    // Example: Adjust based on country (you can use a geolocation package)
+    // if (userCountry == 'UK') emergencyNumber = '999';
+    // if (userCountry == 'EU') emergencyNumber = '112';
+
+    if (safetyDetails.isNotEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text("Select Emergency Contact",
+              style: TextStyle(color: Colors.red[800])),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: safetyDetails.map((contact) {
+                String contactNumber =
+                    contact['emergencyContactNumber']?.toString() ?? 'N/A';
+                String contactName =
+                    contact['emergencyContactName']?.toString() ?? 'Unknown';
+                return ListTile(
+                  title: Text(contactName),
+                  subtitle: Text(contactNumber),
+                  onTap: () async {
+                    final Uri phoneUri =
+                        Uri(scheme: 'tel', path: contactNumber);
+                    try {
+                      if (await canLaunchUrl(phoneUri)) {
+                        await launchUrl(phoneUri);
+                        print("SOS Alert: Initiated call to $contactNumber");
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Unable to initiate phone call')),
+                        );
+                      }
+                    } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Unable to make phone call')),
+                        SnackBar(content: Text('Error: $e')),
                       );
                     }
-                  } catch (e) {
+                    Navigator.pop(context);
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final Uri phoneUri = Uri(scheme: 'tel', path: emergencyNumber);
+                try {
+                  if (await canLaunchUrl(phoneUri)) {
+                    await launchUrl(phoneUri);
+                    print("SOS Alert: Initiated call to $emergencyNumber");
+                  } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error making phone call: $e')),
+                      const SnackBar(
+                          content: Text('Unable to initiate phone call')),
                     );
                   }
-                  Navigator.pop(context);
-                },
-              );
-            }).toList(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              // Fallback to default emergency number
-              String emergencyNumber = '911';
-              final Uri phoneUri = Uri(scheme: 'tel', path: emergencyNumber);
-              try {
-                if (await canLaunchUrl(phoneUri)) {
-                  await launchUrl(phoneUri);
-                  print("SOS Alert: Initiated call to $emergencyNumber");
-                } else {
+                } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Unable to make phone call')),
+                    SnackBar(content: Text('Error: $e')),
                   );
                 }
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error making phone call: $e')),
-                );
-              }
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red[700]),
-            child: const Text("Call 911"),
-          ),
-        ],
-      ),
-    );
-  } else {
-    // No emergency contacts, call default emergency number
-    String emergencyNumber = '911';
-    final Uri phoneUri = Uri(scheme: 'tel', path: emergencyNumber);
-    try {
-      if (await canLaunchUrl(phoneUri)) {
-        await launchUrl(phoneUri);
-        print("SOS Alert: Initiated call to $emergencyNumber");
-      } else {
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red[700]),
+              child: Text("Call $emergencyNumber"),
+            ),
+          ],
+        ),
+      );
+    } else {
+      final Uri phoneUri = Uri(scheme: 'tel', path: emergencyNumber);
+      try {
+        if (await canLaunchUrl(phoneUri)) {
+          await launchUrl(phoneUri);
+          print("SOS Alert: Initiated call to $emergencyNumber");
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Unable to initiate phone call')),
+          );
+        }
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Unable to make phone call')),
+          SnackBar(content: Text('Error: $e')),
         );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error making phone call: $e')),
-      );
     }
   }
-}
-
-// myself 
-
-
-
-  // void _activatePanicMode() async {
-  //   try {
-  //     if (isPlaying) {
-  //       await player.stop();
-  //       isNotSafe = false;
-  //     } else {
-  //       await player.resume();
-  //       isNotSafe = true;
-  //     }
-  //     setState(() {
-  //       isPlaying = !isPlaying;
-  //     });
-  //     // if (!isPlaying) {
-  //     //   Get.to(() => const PanicMode());
-  //     // }
-  //   } catch (e) {
-  //     print("Error in panic mode: $e");
-  //     if (mounted) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text('Error in panic mode: $e')),
-  //       );
-  //     }
-  //   }
-  // }
-
 
   void _activatePanicMode() async {
-    if (isUpdatingPanicMode) return; // Prevent multiple simultaneous updates
+    if (isUpdatingPanicMode) return;
 
     try {
       setState(() => isUpdatingPanicMode = true);
-
       if (isPlaying) {
         await player.stop();
-        isNotSafe = false;
-        await _panicModeRef!.set(0);
+        await _panicModeRef?.set(0);
       } else {
         await player.resume();
-        isNotSafe = true;
-        await _panicModeRef!.set(1);
+        await _panicModeRef?.set(1);
       }
-
       if (mounted) {
         setState(() {
           isPlaying = !isPlaying;
+          isNotSafe = isPlaying;
           isUpdatingPanicMode = false;
         });
       }
-
-      // if (!isPlaying) {
-      //   Get.to(() => const PanicMode());
-      // }
     } catch (e) {
       print("Error updating panic mode: $e");
       if (mounted) {
         setState(() => isUpdatingPanicMode = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating panic mode: $e')),
+          SnackBar(content: Text('Failed to update panic mode.')),
         );
       }
     }
   }
 
-  void _startLiveCamera() {
-    print("Live Camera started");
-  }
-
   void _shareLocation() {
-    Get.to(Location());
+    Get.to(() => const Location());
   }
 
   void _sendEmergencyNotification() {
+    // Implement actual notification logic (e.g., SMS, push notifications)
     print("Emergency notification sent");
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Emergency notification sent.')),
+    );
   }
 }

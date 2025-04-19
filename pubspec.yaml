@@ -59,11 +59,13 @@ dependencies:
   firebase_messaging: ^15.2.4
   firebase_analytics: ^11.4.4
   # google_maps_flutter: ^2.11.0
-  flutter_local_notifications: ^17.0.0
+
   just_audio: ^0.9.46
   firebase_database: ^11.3.4
   geocoding: ^3.0.0
   flutter_sound: ^9.28.0
+  flutter_local_notifications: ^19.1.0
+  google_maps_flutter: ^2.10.1
 
 dev_dependencies:
   flutter_test:
