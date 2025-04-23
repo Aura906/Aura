@@ -480,6 +480,9 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
+
+// myself
+
   void _sendSOSAlert() async {
     // Simple country-based emergency number (enhance with geolocation if needed)
     String emergencyNumber = '911'; // Default for US
@@ -579,6 +582,46 @@ class _DashboardState extends State<Dashboard> {
       }
     }
   }
+
+
+  // my
+
+// void _sendSOSAlert() async {
+//   String emergencyNumber = '911';
+//   emergencyNumber = emergencyNumber.replaceAll(RegExp(r'[^0-9+]'), ''); // Sanitize number
+//   final Uri phoneUri = Uri(scheme: 'tel', path: emergencyNumber);
+
+//   print("Attempting to call: $emergencyNumber");
+//   print("Phone URI: $phoneUri");
+
+//   try {
+//     // Check permissions
+//     var phonePermission = await Permission.phone.status;
+//     var callPermission = await Permission.callPhone.status;
+//     print("Phone permission: $phonePermission");
+//     print("Call permission: $callPermission");
+
+//     bool canLaunch = await canLaunchUrl(phoneUri);
+//     print("Can launch: $canLaunch");
+
+//     if (canLaunch) {
+//       await launchUrl(phoneUri).timeout(Duration(seconds: 5));
+//       print("SOS Alert: Initiated call to $emergencyNumber");
+//     } else {
+//       throw 'Device does not support phone calls or tel: scheme';
+//     }
+//   } catch (e) {
+//     print("Error launching phone call: $e");
+//     if (mounted) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(content: Text('Unable to initiate phone call: $e')),
+//       );
+//     }
+//   }
+// }
+
+
+  // my
 
   void _activatePanicMode() async {
     if (isUpdatingPanicMode) return;
